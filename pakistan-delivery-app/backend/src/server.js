@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const orderRoutes = require('./routes/orders');
 const storeRoutes = require('./routes/stores');
 const paymentRoutes = require('./routes/payment');
+const supplierRoutes = require('./routes/suppliers');
 
 // Connect to database
 connectDB();
@@ -24,6 +25,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/stores', storeRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/stores', supplierRoutes); // Supplier management routes
 
 // Health check
 app.get('/api/health', (req, res) => {
