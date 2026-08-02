@@ -1,3 +1,4 @@
+import "package:go_router/go_router.dart";
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -26,9 +27,9 @@ class _SplashScreenState extends State<SplashScreen> {
     
     // Navigate based on login status
     if (authProvider.isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/home');
+      context.go('/home');
     } else {
-      Navigator.pushReplacementNamed(context, '/login');
+      context.go('/login');
     }
   }
 

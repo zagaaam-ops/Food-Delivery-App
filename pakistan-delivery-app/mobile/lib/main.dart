@@ -1,3 +1,4 @@
+import "package:go_router/go_router.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -58,7 +59,7 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  RouterConfig get _routerConfig {
+  RouterConfig<Object> get _routerConfig {
     return GoRouter(
       initialLocation: '/splash',
       routes: [
