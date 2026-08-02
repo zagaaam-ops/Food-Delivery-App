@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const Order = require('./models/Order');
+const Order = require('../models/Order');
 
 class SocketService {
   constructor() {
