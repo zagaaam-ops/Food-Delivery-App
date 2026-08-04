@@ -9,27 +9,46 @@ class AuthProvider extends ChangeNotifier {
   Map<String, dynamic>? get user => _user;
   String? get token => _token;
 
-  // ⚠️ ONLY THESE CREDENTIALS WILL WORK ⚠️
-  final String validPhone = "03454762207";
-  final String validPassword = "123456";
+  // Customer Credentials
+  final String customerPhone = "03454762207";
+  final String customerPassword = "123456";
 
-  Future<bool> login(String phone, String password) async {
+  // Restaurant Supplier Credentials
+  final String restaurantEmail = "restaurant@food.com";
+  final String restaurantPassword = "123456";
+
+  Future<bool> login(String identifier, String password) async {
     try {
-      // 🔒 STRICT CHECK: Only your phone number and password work
-      if (phone.trim() == validPhone && password.trim() == validPassword) {
+      // Check if logging in as Customer (phone number)
+      if (identifier.trim() == customerPhone && password.trim() == customerPassword) {
         _isLoggedIn = true;
         _user = {
           'id': '1',
           'name': 'Zagaaam (Customer)',
-          'phone': validPhone,
-          'role': 'customer'
+          'phone': customerPhone,
+          'role': 'customer',
+          'email': null,
         };
         _token = 'mock_customer_jwt';
         notifyListeners();
         return true;
       }
       
-      // ❌ Any other credentials will fail
+      // Check if logging in as Restaurant (email)
+      if (identifier.trim().toLowerCase() == restaurantEmail && password.trim() == restaurantPassword) {
+        _isLoggedIn = true;
+        _user = {
+          'id': '2',
+          'name': 'Food Paradise (Restaurant)',
+          'phone': null,
+          'role': 'restaurant',
+          'email': restaurantEmail,
+        };
+        _token = 'mock_restaurant_jwt';
+        notifyListeners();
+        return true;
+      }
+      
       return false;
     } catch (e) {
       return false;
