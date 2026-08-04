@@ -11,15 +11,16 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _phoneController = TextEditingController();
+  final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _isUrdu = false;
   bool _obscurePassword = true;
   String _errorMessage = '';
+  bool _isRestaurantLogin = false;
 
   Future<void> _handleLogin() async {
-    if (_phoneController.text.isEmpty || _passwordController.text.isEmpty) {
+    if (_identifierController.text.isEmpty || _passwordController.text.isEmpty) {
       setState(() {
         _errorMessage = _isUrdu ? 'براہ کرم تمام فیلڈز پُر کریں' : 'Please fill in all fields';
       });
@@ -33,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     bool success = await authProvider.login(
-      _phoneController.text.trim(),
+      _identifierController.text.trim(),
       _passwordController.text.trim(),
     );
 
@@ -48,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _errorMessage = _isUrdu 
           ? 'غلط فون نمبر یا پاس ورڈ' 
-          : 'Invalid phone number or password';
+          : 'Invalid credentials. Try: 03454762207 / 123456 (Customer) or restaurant@food.com / 123456 (Restaurant)';
       });
     }
   }
@@ -56,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _toggleLanguage() {
     setState(() {
       _isUrdu = !_isUrdu;
-      _errorMessage = ''; // Clear error on language switch
+      _errorMessage = '';
     });
   }
 
@@ -118,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(
                         child: Text(
                           _errorMessage,
-                          style: TextStyle(color: Colors.red[800], fontSize: 14),
+                          style: TextStyle(color: Colors.red[800], fontSize: 13),
                         ),
                       ),
                     ],
@@ -126,26 +127,91 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               const SizedBox(height: 20),
               
-              // Phone Field
+              // Login Type Toggle
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _isRestaurantLogin = false),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _isRestaurantLogin ? Colors.transparent : Colors.orange,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '👤 Customer',
+                              style: TextStyle(
+                                color: _isRestaurantLogin ? Colors.black87 : Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _isRestaurantLogin = true),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _isRestaurantLogin ? Colors.orange : Colors.transparent,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '🏪 Restaurant',
+                              style: TextStyle(
+                                color: _isRestaurantLogin ? Colors.white : Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Identifier Field (Phone for Customer, Email for Restaurant)
               TextField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
+                controller: _identifierController,
+                keyboardType: _isRestaurantLogin ? TextInputType.emailAddress : TextInputType.phone,
                 decoration: InputDecoration(
-                  labelText: _isUrdu ? 'فون نمبر' : 'Phone Number',
-                  prefixIcon: const Icon(Icons.phone, color: Colors.orange),
+                  labelText: _isRestaurantLogin 
+                    ? (_isUrdu ? 'ای میل' : 'Email') 
+                    : (_isUrdu ? 'فون نمبر' : 'Phone Number'),
+                  prefixIcon: Icon(
+                    _isRestaurantLogin ? Icons.email : Icons.phone,
+                    color: Colors.orange,
+                  ),
+                  hintText: _isRestaurantLogin 
+                    ? 'restaurant@food.com' 
+                    : '03454762207',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.orange), borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 20),
               
-              // Password Field with Show/Hide
+              // Password Field
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: _isUrdu ? 'پاس ورڈ' : 'Password',
                   prefixIcon: const Icon(Icons.lock, color: Colors.orange),
+                  hintText: '123456',
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -161,7 +227,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.orange), borderRadius: BorderRadius.circular(12)),
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 16),
+              
+              // Login Hint
+              Text(
+                _isRestaurantLogin 
+                  ? 'Use: restaurant@food.com / 123456' 
+                  : 'Use: 03454762207 / 123456',
+                style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
               
               // Login Button
               ElevatedButton(
