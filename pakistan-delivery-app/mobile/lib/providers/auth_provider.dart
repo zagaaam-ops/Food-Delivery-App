@@ -9,14 +9,14 @@ class AuthProvider extends ChangeNotifier {
   Map<String, dynamic>? get user => _user;
   String? get token => _token;
 
-  // YOUR SPECIFIC CREDENTIALS - Only these will work!
+  // ⚠️ ONLY THESE CREDENTIALS WILL WORK ⚠️
   final String validPhone = "03454762207";
   final String validPassword = "123456";
 
   Future<bool> login(String phone, String password) async {
     try {
-      // Only accept your specific credentials
-      if (phone == validPhone && password == validPassword) {
+      // 🔒 STRICT CHECK: Only your phone number and password work
+      if (phone.trim() == validPhone && password.trim() == validPassword) {
         _isLoggedIn = true;
         _user = {
           'id': '1',
@@ -29,6 +29,7 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
       
+      // ❌ Any other credentials will fail
       return false;
     } catch (e) {
       return false;
