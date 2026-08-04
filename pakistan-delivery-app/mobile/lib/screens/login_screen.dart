@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'home_screen.dart'; // Import the new home screen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,11 +23,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    // Simulate network request (We will connect the real backend in Phase 1!)
+    // Simulate network request, then navigate to Home Screen
     Future.delayed(const Duration(seconds: 2), () {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login successful! (Mock)')),
+      
+      // Navigate to the Home Screen and remove Login from the back stack
+      Navigator.pushReplacement(
+        context, 
+        MaterialPageRoute(builder: (context) => const HomeScreen())
       );
     });
   }
@@ -42,23 +46,13 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 60),
-              // Logo / Header
               const Icon(Icons.restaurant_menu, size: 80, color: Colors.orange),
               const SizedBox(height: 20),
-              const Text(
-                'Welcome Back!',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
-              ),
+              const Text('Welcome Back!', textAlign: TextAlign.center, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87)),
               const SizedBox(height: 10),
-              const Text(
-                'Login to your account',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
+              const Text('Login to your account', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey)),
               const SizedBox(height: 50),
               
-              // Phone Field
               TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
@@ -71,7 +65,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
               
-              // Password Field
               TextField(
                 controller: _passwordController,
                 obscureText: true,
@@ -84,7 +77,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
               
-              // Login Button
               ElevatedButton(
                 onPressed: _isLoading ? null : _handleLogin,
                 style: ElevatedButton.styleFrom(
@@ -99,12 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     : const Text('Login', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
               const Spacer(),
-              
-              const Text(
-                'Pakistan Food & Grocery Delivery',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              ),
+              const Text('Pakistan Food & Grocery Delivery', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 12)),
               const SizedBox(height: 20),
             ],
           ),
