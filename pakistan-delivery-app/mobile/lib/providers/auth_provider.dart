@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AuthProvider extends ChangeNotifier {
   bool _isLoggedIn = false;
@@ -9,53 +11,50 @@ class AuthProvider extends ChangeNotifier {
   Map<String, dynamic>? get user => _user;
   String? get token => _token;
 
-  // Mock login - replace with actual API call
-  Future<bool> login(String phone, String password) async {
-    try {
-      // TODO: Call backend API
-      // final response = await http.post(...);
-      
-      await Future.delayed(const Duration(seconds: 1)); // Simulate API call
-      
-      _isLoggedIn = true;
-      _user = {
-        'id': '1',
-        'name': 'Test User',
-        'phone': phone,
-        'role': 'customer'
-      };
-      _token = 'mock_jwt_token';
-      
-      notifyListeners();
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
+  // YOUR SPECIFIC CREDENTIALS
+  final String testPhone = "03454762207";
+  final String testPassword = "123456";
 
-  // Mock register - replace with actual API call
-  Future<bool> register({
-    required String name,
-    required String phone,
-    required String password,
-    String? email,
-  }) async {
+  // Restaurant Owner Credentials (Supplier)
+  final String restaurantEmail = "restaurant@food.com";
+  final String restaurantPassword = "123456";
+
+  Future<bool> login(String identifier, String password, {bool isRestaurant = false}) async {
     try {
-      // TODO: Call backend API
-      await Future.delayed(const Duration(seconds: 1));
+      // In a real app, we call the backend:
+      // final response = await http.post(
+      //   Uri.parse('YOUR_BACKEND_URL/api/auth/login'),
+      //   body: jsonEncode({'phone': identifier, 'password': password}),
+      //   headers: {'Content-Type': 'application/json'},
+      // );
+
+      // For now, we hardcode your credentials for instant testing:
+      if (identifier == testPhone && password == testPassword) {
+        _isLoggedIn = true;
+        _user = {
+          'id': '1',
+          'name': 'Zagaaam (Customer)',
+          'phone': testPhone,
+          'role': 'customer'
+        };
+        _token = 'mock_customer_jwt';
+        notifyListeners();
+        return true;
+      } 
+      else if (identifier == restaurantEmail && password == restaurantPassword && isRestaurant) {
+        _isLoggedIn = true;
+        _user = {
+          'id': '2',
+          'name': 'Food Paradise (Restaurant)',
+          'email': restaurantEmail,
+          'role': 'restaurant'
+        };
+        _token = 'mock_restaurant_jwt';
+        notifyListeners();
+        return true;
+      }
       
-      _isLoggedIn = true;
-      _user = {
-        'id': '1',
-        'name': name,
-        'phone': phone,
-        'email': email,
-        'role': 'customer'
-      };
-      _token = 'mock_jwt_token';
-      
-      notifyListeners();
-      return true;
+      return false;
     } catch (e) {
       return false;
     }
@@ -66,12 +65,5 @@ class AuthProvider extends ChangeNotifier {
     _user = null;
     _token = null;
     notifyListeners();
-  }
-
-  // Pakistani phone number validation
-  bool isValidPakistaniPhone(String phone) {
-    // Format: 03XXXXXXXXX (11 digits starting with 03)
-    final regex = RegExp(r'^03\d{9}$');
-    return regex.hasMatch(phone);
   }
 }
