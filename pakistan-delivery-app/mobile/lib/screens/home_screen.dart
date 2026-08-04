@@ -10,9 +10,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedTab = 0; // 0 = Food, 1 = Grocery
+  int _selectedTab = 0;
   GoogleMapController? _mapController;
   LocationData? _currentLocation;
+  String _locationError = '';
 
   @override
   void initState() {
@@ -21,23 +22,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _getCurrentLocation() async {
-    Location location = Location();
-    bool serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) return;
-    }
+    try {
+      Location location = Location();
+      
+      bool serviceEnabled = await location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await location.requestService();
+        if (!serviceEnabled) {
+          setState(() => _locationError = 'Please enable GPS');
+          return;
+        }
+      }
 
-    PermissionStatus permissionGranted = await location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) return;
-    }
+      PermissionStatus permissionGranted = await location.hasPermission();
+      if (permissionGranted == PermissionStatus.denied) {
+        permissionGranted = await location.requestPermission();
+        if (permissionGranted != PermissionStatus.granted) {
+          setState(() => _locationError = 'Location permission denied');
+          return;
+        }
+      }
 
-    LocationData locationData = await location.getLocation();
-    setState(() {
-      _currentLocation = locationData;
-    });
+      LocationData locationData = await location.getLocation();
+      setState(() {
+        _currentLocation = locationData;
+        _locationError = '';
+      });
+    } catch (e) {
+      setState(() {
+        _locationError = 'Could not get location: $e';
+      });
+    }
   }
 
   @override
@@ -92,23 +107,40 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Google Map (Occupies 40% of the screen)
+          // Google Map (with error handling)
           Expanded(
             flex: 4,
-            child: _currentLocation == null
-                ? const Center(child: CircularProgressIndicator())
-                : GoogleMap(
-                    onMapCreated: (controller) => _mapController = controller,
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!),
-                      zoom: 14.0,
+            child: _locationError.isNotEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.location_off, size: 50, color: Colors.grey[400]),
+                        const SizedBox(height: 8),
+                        Text(_locationError, style: TextStyle(color: Colors.grey[600])),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: _getCurrentLocation,
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                          child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
                     ),
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: true,
-                  ),
+                  )
+                : _currentLocation == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : GoogleMap(
+                        onMapCreated: (controller) => _mapController = controller,
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!),
+                          zoom: 14.0,
+                        ),
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: true,
+                      ),
           ),
 
-          // List of Nearby Shops (Occupies 60% of the screen)
+          // List of Nearby Shops
           Expanded(
             flex: 6,
             child: Padding(
