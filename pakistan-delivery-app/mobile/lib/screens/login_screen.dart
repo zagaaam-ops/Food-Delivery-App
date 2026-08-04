@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../providers/language_provider.dart';
-import '../localization/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,176 +8,105 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
-  bool _obscurePassword = true;
 
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+  void _handleLogin() {
+    if (_phoneController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.login(
-      _phoneController.text.trim(),
-      _passwordController.text,
-    );
-
-    setState(() => _isLoading = false);
-
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
+    // Simulate network request (We will connect the real backend in Phase 1!)
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).error),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('Login successful! (Mock)')),
       );
-    }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
-    
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.login),
-        centerTitle: true,
-        actions: [
-          // Language Toggle
-          IconButton(
-            icon: const Icon(Icons.language),
-            onPressed: () {
-              final langProvider = Provider.of<LanguageProvider>(context, listen: false);
-              langProvider.toggleLanguage();
-            },
-          ),
-        ],
-      ),
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 20),
-                
-                // Logo
-                Icon(
-                  Icons.person_outline,
-                  size: 80,
-                  color: Theme.of(context).colorScheme.primary,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 60),
+              // Logo / Header
+              const Icon(Icons.restaurant_menu, size: 80, color: Colors.orange),
+              const SizedBox(height: 20),
+              const Text(
+                'Welcome Back!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Login to your account',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              const SizedBox(height: 50),
+              
+              // Phone Field
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  prefixIcon: const Icon(Icons.phone, color: Colors.orange),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.orange), borderRadius: BorderRadius.circular(12)),
                 ),
-                const SizedBox(height: 30),
-                
-                // Welcome Text
-                Text(
-                  loc.welcome,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              
+              // Password Field
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  prefixIcon: const Icon(Icons.lock, color: Colors.orange),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.orange), borderRadius: BorderRadius.circular(12)),
                 ),
-                const SizedBox(height: 40),
-                
-                // Phone Number Field
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    labelText: loc.phoneNumber,
-                    prefixIcon: const Icon(Icons.phone),
-                    hintText: '03XXXXXXXXX',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return loc.phoneNumber;
-                    }
-                    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                    if (!authProvider.isValidPakistaniPhone(value)) {
-                      return 'Enter valid Pakistani phone (03XXXXXXXXX)';
-                    }
-                    return null;
-                  },
+              ),
+              const SizedBox(height: 30),
+              
+              // Login Button
+              ElevatedButton(
+                onPressed: _isLoading ? null : _handleLogin,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 2,
                 ),
-                const SizedBox(height: 20),
-                
-                // Password Field
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: loc.password,
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(() => _obscurePassword = !_obscurePassword);
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return loc.password;
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 30),
-                
-                // Login Button
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator()
-                      : Text(
-                          loc.login.toUpperCase(),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                ),
-                const SizedBox(height: 20),
-                
-                // Register Link
-                TextButton(
-                  onPressed: () {
-                    // TODO: Navigate to register screen
-                  },
-                  child: Text(loc.register),
-                ),
-              ],
-            ),
+                child: _isLoading
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Login', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              const Spacer(),
+              
+              const Text(
+                'Pakistan Food & Grocery Delivery',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
         ),
       ),
