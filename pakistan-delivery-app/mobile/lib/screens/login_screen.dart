@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,30 +15,48 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _isUrdu = false;
-  bool _obscurePassword = true; // 👈 NEW: Password visibility toggle
+  bool _obscurePassword = true;
+  String _errorMessage = '';
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     if (_phoneController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_isUrdu ? 'براہ کرم تمام فیلڈز پُر کریں' : 'Please fill in all fields')),
-      );
+      setState(() {
+        _errorMessage = _isUrdu ? 'براہ کرم تمام فیلڈز پُر کریں' : 'Please fill in all fields';
+      });
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
 
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() => _isLoading = false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    bool success = await authProvider.login(
+      _phoneController.text.trim(),
+      _passwordController.text.trim(),
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success) {
       Navigator.pushReplacement(
         context, 
         MaterialPageRoute(builder: (context) => const HomeScreen())
       );
-    });
+    } else {
+      setState(() {
+        _errorMessage = _isUrdu 
+          ? 'غلط فون نمبر یا پاس ورڈ' 
+          : 'Invalid phone number or password';
+      });
+    }
   }
 
   void _toggleLanguage() {
     setState(() {
       _isUrdu = !_isUrdu;
+      _errorMessage = ''; // Clear error on language switch
     });
   }
 
@@ -80,7 +100,31 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
-              const SizedBox(height: 50),
+              const SizedBox(height: 30),
+              
+              // Error Message
+              if (_errorMessage.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red[400], size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage,
+                          style: TextStyle(color: Colors.red[800], fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 20),
               
               // Phone Field
               TextField(
@@ -95,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
               
-              // Password Field with Show/Hide Eye 👁️
+              // Password Field with Show/Hide
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
