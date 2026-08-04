@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'restaurant_dashboard.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -8,10 +11,19 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedTab = 0; // 0 = Food, 1 = Grocery
+  int _selectedTab = 0;
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.user;
+    
+    // If user is a restaurant, show the restaurant dashboard
+    if (user != null && user['role'] == 'restaurant') {
+      return const RestaurantDashboard();
+    }
+
+    // Otherwise show the customer home screen
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.orange,
@@ -113,11 +125,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildShopCard(
                   _selectedTab == 0 ? 'Lahori Charga' : 'Organic Food Market',
                   _selectedTab == 0 ? '4.2 ★ • 40-50 min • Free Delivery' : '4.9 ★ • 2 km • Free Delivery',
-                  _selectedTab == 0 ? Icons.restaurant : Icons.shopping_bag,
-                ),
-                _buildShopCard(
-                  _selectedTab == 0 ? 'Pizza Max' : 'Super Grocery',
-                  _selectedTab == 0 ? '4.6 ★ • 25-40 min • Rs 30 Delivery' : '4.3 ★ • 1.5 km • Rs 50 Delivery',
                   _selectedTab == 0 ? Icons.restaurant : Icons.shopping_bag,
                 ),
               ],
