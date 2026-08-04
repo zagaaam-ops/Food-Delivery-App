@@ -1,22 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.pakistan_delivery_app">
     
-    <!-- Required for internet access -->
     <uses-permission android:name="android.permission.INTERNET" />
-    
-    <!-- Required for Google Maps and Location -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    
-    <!-- Required for Google Maps to work -->
-    <meta-data
-        android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyB41Jp3tKGVgnXY2L6YzEKLO8fXnG-7bX8" />
     
     <application
         android:label="Pakistan Delivery"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@drawable/ic_launcher"
+        android:roundIcon="@drawable/ic_launcher_round">
         <activity
             android:name=".MainActivity"
             android:exported="true"
