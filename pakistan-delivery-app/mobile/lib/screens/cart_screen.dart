@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
+import '../providers/order_provider.dart';
+import '../providers/auth_provider.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -8,6 +10,7 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
     
     if (cartProvider.isEmpty) {
       return Scaffold(
@@ -29,6 +32,10 @@ class CartScreen extends StatelessWidget {
         ),
       );
     }
+
+    final user = authProvider.user;
+    final customerName = user?['name'] ?? 'Customer';
+    final customerPhone = user?['phone'] ?? 'N/A';
 
     return Scaffold(
       appBar: AppBar(
@@ -172,20 +179,54 @@ class CartScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Place order
+                      // Get the order provider
+                      final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+                      
+                      // Place the order
+                      orderProvider.placeOrder(
+                        customerName: customerName,
+                        customerPhone: customerPhone,
+                        restaurantId: cartProvider.items.first.restaurantId,
+                        restaurantName: cartProvider.items.first.restaurantName,
+                        items: List.from(cartProvider.items),
+                        total: cartProvider.totalAmount,
+                      );
+                      
+                      // Clear the cart
+                      cartProvider.clearCart();
+                      
+                      // Show success dialog
                       showDialog(
                         context: context,
                         barrierDismissible: false,
-                        builder: (ctx) => const AlertDialog(
-                          title: Text('Order Placed!'),
-                          content: Text('Your order has been sent to the restaurant.'),
+                        builder: (ctx) => AlertDialog(
+                          title: const Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green),
+                              SizedBox(width: 8),
+                              Text('Order Placed!'),
+                            ],
+                          ),
+                          content: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Your order has been sent to the restaurant.'),
+                              SizedBox(height: 8),
+                              Text('📱 The restaurant will confirm your order shortly.'),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                Navigator.pop(context); // Go back to home
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
                         ),
                       );
-                      Future.delayed(const Duration(seconds: 2), () {
-                        Navigator.pop(context);
-                        cartProvider.clearCart();
-                        Navigator.pop(context); // Go back to menu
-                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
