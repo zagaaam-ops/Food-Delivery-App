@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/order_provider.dart';
-import '../providers/auth_provider.dart';
 
 class RestaurantDashboard extends StatefulWidget {
   const RestaurantDashboard({super.key});
@@ -14,21 +13,26 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
   int _selectedTab = 0; // 0 = Pending, 1 = Active, 2 = History
 
   @override
+  void initState() {
+    super.initState();
+    // Force refresh orders when dashboard loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<OrderProvider>(context, listen: false).notifyListeners();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final orderProvider = Provider.of<OrderProvider>(context);
-    final authProvider = Provider.of<AuthProvider>(context);
     
-    // Get the restaurant ID from the logged-in user
-    final restaurantId = authProvider.user?['id'] ?? 'restaurant_1';
+    // Show ALL orders (no filtering for testing)
+    List<Order> allOrders = orderProvider.allOrders;
     
-    // Filter orders for this restaurant only
-    List<Order> restaurantOrders = orderProvider.getOrdersForRestaurant(restaurantId);
-    
-    List<Order> pendingOrders = restaurantOrders.where((o) => o.status == 'pending').toList();
-    List<Order> activeOrders = restaurantOrders.where((o) => 
+    List<Order> pendingOrders = allOrders.where((o) => o.status == 'pending').toList();
+    List<Order> activeOrders = allOrders.where((o) => 
       o.status == 'accepted' || o.status == 'preparing' || o.status == 'ready'
     ).toList();
-    List<Order> completedOrders = restaurantOrders.where((o) => 
+    List<Order> completedOrders = allOrders.where((o) => 
       o.status == 'delivered' || o.status == 'cancelled'
     ).toList();
 
@@ -42,7 +46,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
             onPressed: () {
               setState(() {});
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Orders refreshed!')),
+                const SnackBar(content: Text('🔄 Orders refreshed!')),
               );
             },
           ),
@@ -59,7 +63,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                 const SizedBox(width: 12),
                 _buildStatCard('Active', activeOrders.length.toString(), Colors.green),
                 const SizedBox(width: 12),
-                _buildStatCard('Today', (pendingOrders.length + activeOrders.length + completedOrders.length).toString(), Colors.blue),
+                _buildStatCard('Total', allOrders.length.toString(), Colors.blue),
               ],
             ),
           ),
@@ -154,7 +158,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
             Text(emptyMessage, style: TextStyle(color: Colors.grey[600])),
             const SizedBox(height: 8),
             Text(
-              'Orders placed by customers will appear here',
+              'Place an order as a customer first!',
               style: TextStyle(color: Colors.grey[400], fontSize: 12),
             ),
           ],
@@ -217,6 +221,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
           const SizedBox(height: 8),
           Text('👤 ${order.customerName}', style: const TextStyle(fontSize: 14)),
           Text('📱 ${order.customerPhone}', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+          Text('🏪 ${order.restaurantName}', style: TextStyle(fontSize: 13, color: Colors.orange[700])),
           const SizedBox(height: 4),
           Text(
             '📦 ${order.items.map((i) => '${i.quantity}x ${i.name}').join(', ')}',
