@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
+import 'cart_screen.dart'; // 👈 ADD THIS IMPORT
 
 class MenuScreen extends StatefulWidget {
   final String restaurantName;
@@ -43,7 +44,7 @@ class _MenuScreenState extends State<MenuScreen> {
         backgroundColor: Colors.orange,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context), // 👈 Back button
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(widget.restaurantName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
@@ -84,7 +85,6 @@ class _MenuScreenState extends State<MenuScreen> {
       ),
       body: Column(
         children: [
-          // Category Filter
           Container(
             height: 50,
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -118,7 +118,6 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
           ),
           
-          // Menu Items List
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
