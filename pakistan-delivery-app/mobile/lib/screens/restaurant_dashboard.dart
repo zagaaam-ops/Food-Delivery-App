@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/order_provider.dart';
 
 class RestaurantDashboard extends StatefulWidget {
   const RestaurantDashboard({super.key});
@@ -10,57 +12,26 @@ class RestaurantDashboard extends StatefulWidget {
 class _RestaurantDashboardState extends State<RestaurantDashboard> {
   int _selectedTab = 0; // 0 = Pending, 1 = Active, 2 = History
 
-  // Mock orders data
-  final List<Map<String, dynamic>> _pendingOrders = [
-    {
-      'id': 'ORD-001',
-      'customer': 'Ahmed Khan',
-      'items': '2x Biryani, 1x Cold Drink',
-      'total': 'Rs 1,250',
-      'time': '10 min ago',
-      'status': 'pending',
-    },
-    {
-      'id': 'ORD-002',
-      'customer': 'Sara Ali',
-      'items': '1x Pizza, 2x Garlic Bread',
-      'total': 'Rs 1,800',
-      'time': '25 min ago',
-      'status': 'pending',
-    },
-    {
-      'id': 'ORD-003',
-      'customer': 'Usman Malik',
-      'items': '3x Burger, 3x Fries',
-      'total': 'Rs 2,100',
-      'time': '45 min ago',
-      'status': 'pending',
-    },
-  ];
-
-  final List<Map<String, dynamic>> _activeOrders = [
-    {
-      'id': 'ORD-004',
-      'customer': 'Fatima Noor',
-      'items': '1x BBQ Platter',
-      'total': 'Rs 3,500',
-      'time': '15 min ago',
-      'status': 'preparing',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final orderProvider = Provider.of<OrderProvider>(context);
+    
+    List<Order> pendingOrders = orderProvider.pendingOrders;
+    List<Order> activeOrders = orderProvider.activeOrders;
+    List<Order> completedOrders = orderProvider.completedOrders;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.orange,
         title: const Text('Restaurant Dashboard', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
-              // Logout logic
-              Navigator.pop(context);
+              setState(() {});
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Orders refreshed!')),
+              );
             },
           ),
         ],
@@ -72,11 +43,11 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                _buildStatCard('Pending', '3', Colors.orange),
+                _buildStatCard('Pending', pendingOrders.length.toString(), Colors.orange),
                 const SizedBox(width: 12),
-                _buildStatCard('Active', '1', Colors.green),
+                _buildStatCard('Active', activeOrders.length.toString(), Colors.green),
                 const SizedBox(width: 12),
-                _buildStatCard('Today', '12', Colors.blue),
+                _buildStatCard('Today', (pendingOrders.length + activeOrders.length + completedOrders.length).toString(), Colors.blue),
               ],
             ),
           ),
@@ -86,11 +57,11 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                _buildTab('🕐 Pending', 0),
+                _buildTab('🕐 Pending (${pendingOrders.length})', 0),
                 const SizedBox(width: 8),
-                _buildTab('⚡ Active', 1),
+                _buildTab('⚡ Active (${activeOrders.length})', 1),
                 const SizedBox(width: 8),
-                _buildTab('📋 History', 2),
+                _buildTab('📋 History (${completedOrders.length})', 2),
               ],
             ),
           ),
@@ -101,9 +72,11 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ListView(
-                children: _getCurrentOrders().map((order) => _buildOrderCard(order)).toList(),
-              ),
+              child: _selectedTab == 0
+                  ? _buildOrderList(pendingOrders, 'No pending orders')
+                  : _selectedTab == 1
+                      ? _buildOrderList(activeOrders, 'No active orders')
+                      : _buildOrderList(completedOrders, 'No completed orders'),
             ),
           ),
         ],
@@ -158,18 +131,34 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
     );
   }
 
-  List<Map<String, dynamic>> _getCurrentOrders() {
-    if (_selectedTab == 0) return _pendingOrders;
-    if (_selectedTab == 1) return _activeOrders;
-    return []; // History (empty for now)
+  Widget _buildOrderList(List<Order> orders, String emptyMessage) {
+    if (orders.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inbox, size: 60, color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            Text(emptyMessage, style: TextStyle(color: Colors.grey[600])),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        return _buildOrderCard(orders[index]);
+      },
+    );
   }
 
-  Widget _buildOrderCard(Map<String, dynamic> order) {
-    bool isPending = order['status'] == 'pending';
-    bool isPreparing = order['status'] == 'preparing';
+  Widget _buildOrderCard(Order order) {
+    bool isPending = order.status == 'pending';
+    bool isActive = order.status == 'accepted' || order.status == 'preparing' || order.status == 'ready';
     
-    Color statusColor = isPending ? Colors.orange : (isPreparing ? Colors.green : Colors.grey);
-    String statusText = isPending ? 'Pending' : (isPreparing ? 'Preparing' : 'Completed');
+    Color statusColor = isPending ? Colors.orange : (isActive ? Colors.green : Colors.grey);
+    String statusText = order.status.toUpperCase();
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -192,7 +181,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                order['id'],
+                order.id,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               Container(
@@ -209,14 +198,19 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
             ],
           ),
           const SizedBox(height: 8),
-          Text('👤 ${order['customer']}', style: const TextStyle(fontSize: 14)),
-          Text('📦 ${order['items']}', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+          Text('👤 ${order.customerName}', style: const TextStyle(fontSize: 14)),
+          Text('📱 ${order.customerPhone}', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+          const SizedBox(height: 4),
+          Text(
+            '📦 ${order.items.map((i) => '${i.quantity}x ${i.name}').join(', ')}',
+            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+          ),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('💰 ${order['total']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Text('⏱️ ${order['time']}', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+              Text('💰 Rs ${order.total.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('⏱️ ${_timeAgo(order.createdAt)}', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
             ],
           ),
           if (isPending) ...[
@@ -226,10 +220,12 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Accept order
+                      Provider.of<OrderProvider>(context, listen: false)
+                          .updateOrderStatus(order.id, 'accepted');
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Order accepted! Customer will be notified.')),
+                        const SnackBar(content: Text('✅ Order accepted! Customer notified.')),
                       );
+                      setState(() {});
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
@@ -242,10 +238,12 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Reject order
+                      Provider.of<OrderProvider>(context, listen: false)
+                          .updateOrderStatus(order.id, 'cancelled');
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Order rejected. Customer notified.')),
+                        const SnackBar(content: Text('❌ Order rejected. Customer notified.')),
                       );
+                      setState(() {});
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
@@ -257,26 +255,79 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
               ],
             ),
           ],
-          if (isPreparing) ...[
+          if (order.status == 'accepted') ...[
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
+                  Provider.of<OrderProvider>(context, listen: false)
+                      .updateOrderStatus(order.id, 'preparing');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Order marked as ready for delivery!')),
+                    const SnackBar(content: Text('👨‍🍳 Order is being prepared!')),
                   );
+                  setState(() {});
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('👨‍🍳 Start Preparing'),
+              ),
+            ),
+          ],
+          if (order.status == 'preparing') ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Provider.of<OrderProvider>(context, listen: false)
+                      .updateOrderStatus(order.id, 'ready');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('🚀 Order ready for delivery!')),
+                  );
+                  setState(() {});
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('🚀 Ready for Delivery'),
               ),
             ),
           ],
+          if (order.status == 'ready') ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Provider.of<OrderProvider>(context, listen: false)
+                      .updateOrderStatus(order.id, 'delivered');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('✅ Order delivered!')),
+                  );
+                  setState(() {});
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('✅ Mark Delivered'),
+              ),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  String _timeAgo(DateTime dateTime) {
+    final difference = DateTime.now().difference(dateTime);
+    if (difference.inDays > 0) return '${difference.inDays}d ago';
+    if (difference.inHours > 0) return '${difference.inHours}h ago';
+    if (difference.inMinutes > 0) return '${difference.inMinutes}m ago';
+    return 'Just now';
   }
 }
