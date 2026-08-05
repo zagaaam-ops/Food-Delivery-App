@@ -24,177 +24,226 @@ class _HomeScreenState extends State<HomeScreen> {
     
     // If user is a restaurant, show the restaurant dashboard
     if (user != null && user['role'] == 'restaurant') {
-      return const RestaurantDashboard();
+      return PopScope(
+        canPop: false, // Prevent exiting on back press
+        onPopInvoked: (didPop) async {
+          if (!didPop) {
+            // Show dialog before exiting
+            final shouldExit = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Exit App'),
+                content: const Text('Are you sure you want to exit?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('Exit', style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              ),
+            );
+            if (shouldExit == true) {
+              // Exit the app
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            }
+          }
+        },
+        child: const RestaurantDashboard(),
+      );
     }
 
-    // Otherwise show the customer home screen
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.orange,
-        title: const Text('Pakistan Delivery', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        actions: [
-          // Cart Icon with Badge - Using Consumer to rebuild when cart changes
-          Consumer<CartProvider>(
-            builder: (context, cart, child) {
-              return Stack(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.shopping_cart, color: Colors.white),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const CartScreen()),
-                      );
-                    },
-                  ),
-                  if (cart.itemCount > 0)
-                    Positioned(
-                      right: 4,
-                      top: 4,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          '${cart.itemCount}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Food / Grocery Toggle
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedTab = 0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        color: _selectedTab == 0 ? Colors.orange : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '🍔 Food',
-                          style: TextStyle(
-                            color: _selectedTab == 0 ? Colors.white : Colors.black87,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+    // Customer home screen with back button handling
+    return PopScope(
+      canPop: false, // Prevent exiting on back press
+      onPopInvoked: (didPop) async {
+        if (!didPop) {
+          final shouldExit = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Exit App'),
+              content: const Text('Are you sure you want to exit?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancel'),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedTab = 1),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        color: _selectedTab == 1 ? Colors.orange : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '🛒 Grocery',
-                          style: TextStyle(
-                            color: _selectedTab == 1 ? Colors.white : Colors.black87,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Exit', style: TextStyle(color: Colors.red)),
                 ),
               ],
             ),
-          ),
-          
-          // Welcome Message
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                _selectedTab == 0 ? 'Nearby Restaurants' : 'Nearby Grocery Stores',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          );
+          if (shouldExit == true) {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          }
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.orange,
+          title: const Text('Pakistan Delivery', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          actions: [
+            Consumer<CartProvider>(
+              builder: (context, cart, child) {
+                return Stack(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const CartScreen()),
+                        );
+                      },
+                    ),
+                    if (cart.itemCount > 0)
+                      Positioned(
+                        right: 4,
+                        top: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '${cart.itemCount}',
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            // Food / Grocery Toggle
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedTab = 0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: _selectedTab == 0 ? Colors.orange : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '🍔 Food',
+                            style: TextStyle(
+                              color: _selectedTab == 0 ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedTab = 1),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: _selectedTab == 1 ? Colors.orange : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '🛒 Grocery',
+                            style: TextStyle(
+                              color: _selectedTab == 1 ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          
-          // Restaurant/Grocery List
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                _buildShopCard(
-                  'Biryani House',
-                  '4.5 ★ • 30-45 min • Free Delivery',
-                  Icons.restaurant,
-                  'restaurant_1',
-                  _selectedTab == 0,
+            
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _selectedTab == 0 ? 'Nearby Restaurants' : 'Nearby Grocery Stores',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                _buildShopCard(
-                  'Karachi BBQ',
-                  '4.8 ★ • 20-35 min • Rs 50 Delivery',
-                  Icons.restaurant,
-                  'restaurant_2',
-                  _selectedTab == 0,
-                ),
-                _buildShopCard(
-                  'Lahori Charga',
-                  '4.2 ★ • 40-50 min • Free Delivery',
-                  Icons.restaurant,
-                  'restaurant_3',
-                  _selectedTab == 0,
-                ),
-                _buildShopCard(
-                  'Fresh Mart Grocery',
-                  '4.7 ★ • 1-2 km • Fresh Produce',
-                  Icons.shopping_bag,
-                  'grocery_1',
-                  _selectedTab == 1,
-                ),
-                _buildShopCard(
-                  'Daily Needs Store',
-                  '4.5 ★ • 0.5 km • Rs 30 Delivery',
-                  Icons.shopping_bag,
-                  'grocery_2',
-                  _selectedTab == 1,
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+            
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  _buildShopCard(
+                    'Biryani House',
+                    '4.5 ★ • 30-45 min • Free Delivery',
+                    Icons.restaurant,
+                    'restaurant_1',
+                    _selectedTab == 0,
+                  ),
+                  _buildShopCard(
+                    'Karachi BBQ',
+                    '4.8 ★ • 20-35 min • Rs 50 Delivery',
+                    Icons.restaurant,
+                    'restaurant_2',
+                    _selectedTab == 0,
+                  ),
+                  _buildShopCard(
+                    'Lahori Charga',
+                    '4.2 ★ • 40-50 min • Free Delivery',
+                    Icons.restaurant,
+                    'restaurant_3',
+                    _selectedTab == 0,
+                  ),
+                  _buildShopCard(
+                    'Fresh Mart Grocery',
+                    '4.7 ★ • 1-2 km • Fresh Produce',
+                    Icons.shopping_bag,
+                    'grocery_1',
+                    _selectedTab == 1,
+                  ),
+                  _buildShopCard(
+                    'Daily Needs Store',
+                    '4.5 ★ • 0.5 km • Rs 30 Delivery',
+                    Icons.shopping_bag,
+                    'grocery_2',
+                    _selectedTab == 1,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: 0,
+          selectedItemColor: Colors.orange,
+          unselectedItemColor: Colors.grey,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          ],
+        ),
       ),
     );
   }
