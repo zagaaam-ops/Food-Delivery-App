@@ -33,34 +33,43 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.orange,
         title: const Text('Pakistan Delivery', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.shopping_cart, color: Colors.white),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CartScreen()),
-                  );
-                },
-              ),
-              if (cartProvider.itemCount > 0)
-                Positioned(
-                  right: 4,
-                  top: 4,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '${cartProvider.itemCount}',
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                    ),
+          // Cart Icon with Badge - Using Consumer to rebuild when cart changes
+          Consumer<CartProvider>(
+            builder: (context, cart, child) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CartScreen()),
+                      );
+                    },
                   ),
-                ),
-            ],
+                  if (cart.itemCount > 0)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${cart.itemCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         ],
       ),
