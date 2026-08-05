@@ -85,6 +85,9 @@ class OrderProvider extends ChangeNotifier {
 
   List<Order> get orders => _orders;
   
+  // ALL orders (no filtering) - restaurant can see all orders
+  List<Order> get allOrders => _orders;
+  
   List<Order> get pendingOrders => _orders.where((o) => o.status == 'pending').toList();
   
   List<Order> get activeOrders => _orders.where((o) => 
@@ -95,9 +98,12 @@ class OrderProvider extends ChangeNotifier {
     o.status == 'delivered' || o.status == 'cancelled'
   ).toList();
 
-  // Get orders for a specific restaurant
+  // Get orders for a specific restaurant (ALL restaurants see ALL orders for testing)
   List<Order> getOrdersForRestaurant(String restaurantId) {
-    return _orders.where((o) => o.restaurantId == restaurantId).toList();
+    // For testing: return ALL orders so restaurant can see everything
+    // In production, filter by restaurantId:
+    // return _orders.where((o) => o.restaurantId == restaurantId).toList();
+    return _orders;
   }
 
   // Get orders for a specific customer
@@ -126,6 +132,7 @@ class OrderProvider extends ChangeNotifier {
     _orders.insert(0, order);
     _saveOrders();
     notifyListeners();
+    print('✅ Order placed: ${order.id} for ${order.restaurantName}');
   }
 
   void updateOrderStatus(String orderId, String newStatus) {
@@ -134,6 +141,9 @@ class OrderProvider extends ChangeNotifier {
       _orders[index].status = newStatus;
       _saveOrders();
       notifyListeners();
+      print('✅ Order ${_orders[index].id} status updated to: $newStatus');
+    } else {
+      print('❌ Order not found: $orderId');
     }
   }
 
@@ -151,10 +161,13 @@ class OrderProvider extends ChangeNotifier {
       if (ordersJson != null) {
         final List<dynamic> decoded = jsonDecode(ordersJson);
         _orders = decoded.map((o) => Order.fromJson(o as Map<String, dynamic>)).toList();
+        print('📦 Loaded ${_orders.length} orders from storage');
         notifyListeners();
+      } else {
+        print('📦 No orders found in storage');
       }
     } catch (e) {
-      print('Error loading orders: $e');
+      print('❌ Error loading orders: $e');
     }
   }
 
@@ -163,8 +176,9 @@ class OrderProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final String ordersJson = jsonEncode(_orders.map((o) => o.toJson()).toList());
       await prefs.setString(_storageKey, ordersJson);
+      print('💾 Saved ${_orders.length} orders to storage');
     } catch (e) {
-      print('Error saving orders: $e');
+      print('❌ Error saving orders: $e');
     }
   }
 }
