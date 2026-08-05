@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/cart_provider.dart';
+import 'providers/order_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
       ],
       child: MaterialApp.router(
         title: 'Pakistan Delivery',
@@ -43,7 +45,6 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  // Fix: Explicitly type the router as RouterConfig<Object>
   RouterConfig<Object> get _routerConfig {
     return GoRouter(
       initialLocation: '/splash',
