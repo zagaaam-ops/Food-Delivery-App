@@ -3,99 +3,78 @@ import 'package:flutter/material.dart';
 class CartItem {
   final String id;
   final String name;
-  final String? nameUrdu;
   final double price;
+  final String restaurantId;
+  final String restaurantName;
   int quantity;
-  final String storeId;
 
   CartItem({
     required this.id,
     required this.name,
-    this.nameUrdu,
     required this.price,
+    required this.restaurantId,
+    required this.restaurantName,
     this.quantity = 1,
-    required this.storeId,
   });
 
   double get total => price * quantity;
 }
 
 class CartProvider extends ChangeNotifier {
-  final List<CartItem> _items = [];
+  List<CartItem> _items = [];
+  String? _currentRestaurantId;
 
   List<CartItem> get items => _items;
-  
-  int get itemCount => _items.length;
-  
-  double get subtotal {
-    return _items.fold(0, (sum, item) => sum + item.total);
-  }
-
-  double get deliveryFee => 50.0; // Mock delivery fee
-  
-  double get tax => subtotal * 0.13; // 13% GST in Pakistan
-  
-  double get total => subtotal + deliveryFee + tax;
+  int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
+  double get totalAmount => _items.fold(0, (sum, item) => sum + item.total);
+  bool get isEmpty => _items.isEmpty;
+  String? get currentRestaurantId => _currentRestaurantId;
 
   void addItem(CartItem item) {
-    final existingIndex = _items.indexWhere((i) => i.id == item.id);
+    // Check if adding from a different restaurant
+    if (_currentRestaurantId != null && _currentRestaurantId != item.restaurantId) {
+      // Clear cart if switching restaurants
+      _items.clear();
+    }
     
-    if (existingIndex >= 0) {
-      _items[existingIndex].quantity += item.quantity;
+    _currentRestaurantId = item.restaurantId;
+    
+    // Check if item already exists
+    int index = _items.indexWhere((i) => i.id == item.id);
+    if (index != -1) {
+      _items[index].quantity++;
     } else {
       _items.add(item);
     }
-    
     notifyListeners();
   }
 
   void removeItem(String itemId) {
     _items.removeWhere((item) => item.id == itemId);
+    if (_items.isEmpty) {
+      _currentRestaurantId = null;
+    }
     notifyListeners();
   }
 
-  void updateQuantity(String itemId, int quantity) {
-    if (quantity <= 0) {
-      removeItem(itemId);
-      return;
-    }
-
-    final index = _items.indexWhere((item) => item.id == itemId);
-    if (index >= 0) {
-      _items[index].quantity = quantity;
-      notifyListeners();
-    }
-  }
-
-  void incrementQuantity(String itemId) {
-    final index = _items.indexWhere((item) => item.id == itemId);
-    if (index >= 0) {
-      _items[index].quantity++;
-      notifyListeners();
-    }
-  }
-
-  void decrementQuantity(String itemId) {
-    final index = _items.indexWhere((item) => item.id == itemId);
-    if (index >= 0) {
-      if (_items[index].quantity > 1) {
-        _items[index].quantity--;
-        notifyListeners();
+  void updateQuantity(String itemId, int newQuantity) {
+    int index = _items.indexWhere((item) => item.id == itemId);
+    if (index != -1) {
+      if (newQuantity <= 0) {
+        _items.removeAt(index);
       } else {
-        removeItem(itemId);
+        _items[index].quantity = newQuantity;
       }
+      if (_items.isEmpty) {
+        _currentRestaurantId = null;
+      }
+      notifyListeners();
     }
   }
 
-  void clear() {
+  void clearCart() {
     _items.clear();
+    _currentRestaurantId = null;
     notifyListeners();
-  }
-
-  // Check if all items are from the same store
-  bool isSingleStore() {
-    if (_items.isEmpty) return true;
-    final firstStoreId = _items.first.storeId;
-    return _items.every((item) => item.storeId == firstStoreId);
   }
 }
