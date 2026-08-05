@@ -43,7 +43,8 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  RouterConfig get _routerConfig {
+  // Fix: Explicitly type the router as RouterConfig<Object>
+  RouterConfig<Object> get _routerConfig {
     return GoRouter(
       initialLocation: '/splash',
       routes: [
