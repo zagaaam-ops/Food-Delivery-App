@@ -38,8 +38,8 @@ class AuthProvider extends ChangeNotifier {
       if (identifier.trim().toLowerCase() == restaurantEmail && password.trim() == restaurantPassword) {
         _isLoggedIn = true;
         _user = {
-          'id': '2',
-          'name': 'Food Paradise (Restaurant)',
+          'id': 'restaurant_1', // 👈 This must match the restaurant ID in home_screen.dart
+          'name': 'Biryani House (Restaurant)',
           'phone': null,
           'role': 'restaurant',
           'email': restaurantEmail,
