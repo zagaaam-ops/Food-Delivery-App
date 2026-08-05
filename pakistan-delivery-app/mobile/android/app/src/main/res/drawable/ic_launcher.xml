@@ -1,15 +1,60 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="48dp"
-    android:height="48dp"
-    android:viewportWidth="48"
-    android:viewportHeight="48">
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
   <path
-      android:pathData="M24,8C14,8 6,16 6,26L6,36C6,42 10,46 16,46L32,46C38,46 42,42 42,36L42,26C42,16 34,8 24,8ZM24,14C30,14 35,19 35,25L35,29L24,29L24,14ZM24,40C18,40 14,36 14,32L14,31L24,31L24,40ZM35,31L35,32C35,38 30,40 24,40L24,36L35,31Z"
-      android:fillColor="#FFFFFF"/>
+      android:pathData="M0,0h108v108h-108z"
+      android:fillColor="#FF6B00"/>
   <path
-      android:pathData="M16,25L16,29L20,29L20,25C20,22.5 18.4,20 16,20C13.6,20 16,22.5 16,25Z"
-      android:fillColor="#FFFFFF"/>
+      android:pathData="M54,54m-42,0a42,42 0,1 1,84 0a42,42 0,1 1,-84 0"
+      android:fillColor="#FFFFFF"
+      android:alpha="0.15"/>
+  <!-- Delivery Bag -->
   <path
-      android:pathData="M28,25L28,29L32,29L32,25C32,22.5 30.4,20 28,20C25.6,20 28,22.5 28,25Z"
+      android:pathData="M38,42L38,68C38,74 42,78 48,78L60,78C66,78 70,74 70,68L70,42L38,42Z"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="4"
       android:fillColor="#FFFFFF"/>
+  <!-- Bag Handle -->
+  <path
+      android:pathData="M44,42L44,36C44,30 50,28 54,28C58,28 64,30 64,36L64,42"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="4"
+      android:fillColor="none"/>
+  <!-- Food Items inside bag -->
+  <path
+      android:pathData="M46,50L48,50L48,52L46,52L46,50Z"
+      android:fillColor="#FF6B00"/>
+  <path
+      android:pathData="M50,50L52,50L52,52L50,52L50,50Z"
+      android:fillColor="#FF6B00"/>
+  <path
+      android:pathData="M54,50L56,50L56,52L54,52L54,50Z"
+      android:fillColor="#FF6B00"/>
+  <path
+      android:pathData="M58,50L60,50L60,52L58,52L58,50Z"
+      android:fillColor="#FF6B00"/>
+  <!-- Fork -->
+  <path
+      android:pathData="M32,58L32,48"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="3"
+      android:strokeCap="round"/>
+  <path
+      android:pathData="M29,48L29,44M32,48L32,44M35,48L35,44"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="3"
+      android:strokeCap="round"/>
+  <!-- Knife -->
+  <path
+      android:pathData="M76,58L76,48"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="3"
+      android:strokeCap="round"/>
+  <path
+      android:pathData="M76,48L78,44M76,48L74,44"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="3"
+      android:strokeCap="round"/>
 </vector>
