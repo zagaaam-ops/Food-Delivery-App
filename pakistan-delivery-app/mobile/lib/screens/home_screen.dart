@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/cart_provider.dart';
 import 'restaurant_dashboard.dart';
+import 'menu_screen.dart';
+import 'cart_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final cartProvider = Provider.of<CartProvider>(context);
     final user = authProvider.user;
     
     // If user is a restaurant, show the restaurant dashboard
@@ -29,13 +33,34 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.orange,
         title: const Text('Pakistan Delivery', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart, color: Colors.white),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Cart feature coming soon!')),
-              );
-            },
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CartScreen()),
+                  );
+                },
+              ),
+              if (cartProvider.itemCount > 0)
+                Positioned(
+                  right: 4,
+                  top: 4,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${cartProvider.itemCount}',
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -113,19 +138,39 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _buildShopCard(
-                  _selectedTab == 0 ? 'Biryani House' : 'Fresh Mart Grocery',
-                  _selectedTab == 0 ? '4.5 ★ • 30-45 min • Free Delivery' : '4.7 ★ • 1-2 km • Fresh Produce',
-                  _selectedTab == 0 ? Icons.restaurant : Icons.shopping_bag,
+                  'Biryani House',
+                  '4.5 ★ • 30-45 min • Free Delivery',
+                  Icons.restaurant,
+                  'restaurant_1',
+                  _selectedTab == 0,
                 ),
                 _buildShopCard(
-                  _selectedTab == 0 ? 'Karachi BBQ' : 'Daily Needs Store',
-                  _selectedTab == 0 ? '4.8 ★ • 20-35 min • Rs 50 Delivery' : '4.5 ★ • 0.5 km • Rs 30 Delivery',
-                  _selectedTab == 0 ? Icons.restaurant : Icons.shopping_bag,
+                  'Karachi BBQ',
+                  '4.8 ★ • 20-35 min • Rs 50 Delivery',
+                  Icons.restaurant,
+                  'restaurant_2',
+                  _selectedTab == 0,
                 ),
                 _buildShopCard(
-                  _selectedTab == 0 ? 'Lahori Charga' : 'Organic Food Market',
-                  _selectedTab == 0 ? '4.2 ★ • 40-50 min • Free Delivery' : '4.9 ★ • 2 km • Free Delivery',
-                  _selectedTab == 0 ? Icons.restaurant : Icons.shopping_bag,
+                  'Lahori Charga',
+                  '4.2 ★ • 40-50 min • Free Delivery',
+                  Icons.restaurant,
+                  'restaurant_3',
+                  _selectedTab == 0,
+                ),
+                _buildShopCard(
+                  'Fresh Mart Grocery',
+                  '4.7 ★ • 1-2 km • Fresh Produce',
+                  Icons.shopping_bag,
+                  'grocery_1',
+                  _selectedTab == 1,
+                ),
+                _buildShopCard(
+                  'Daily Needs Store',
+                  '4.5 ★ • 0.5 km • Rs 30 Delivery',
+                  Icons.shopping_bag,
+                  'grocery_2',
+                  _selectedTab == 1,
                 ),
               ],
             ),
@@ -145,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildShopCard(String name, String details, IconData icon) {
+  Widget _buildShopCard(String name, String details, IconData icon, String id, bool isFood) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -190,8 +235,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Order from $name coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MenuScreen(
+                    restaurantName: name,
+                    restaurantId: id,
+                  ),
+                ),
               );
             },
             style: ElevatedButton.styleFrom(
@@ -199,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text('Order'),
+            child: const Text('View Menu'),
           ),
         ],
       ),
