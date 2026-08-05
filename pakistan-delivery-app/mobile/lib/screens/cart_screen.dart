@@ -35,7 +35,9 @@ class CartScreen extends StatelessWidget {
 
     final user = authProvider.user;
     final customerName = user?['name'] ?? 'Customer';
-    final customerPhone = user?['phone'] ?? 'N/A';
+    final customerPhone = user?['phone'] ?? '03454762207';
+    final restaurantId = cartProvider.items.first.restaurantId;
+    final restaurantName = cartProvider.items.first.restaurantName;
 
     return Scaffold(
       appBar: AppBar(
@@ -178,55 +180,69 @@ class CartScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       // Get the order provider
                       final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+                      
+                      // Debug: Print order details
+                      print('📦 === PLACING ORDER ===');
+                      print('👤 Customer: $customerName ($customerPhone)');
+                      print('🏪 Restaurant: $restaurantName ($restaurantId)');
+                      print('📦 Items: ${cartProvider.items.length}');
+                      print('💰 Total: ${cartProvider.totalAmount}');
                       
                       // Place the order
                       orderProvider.placeOrder(
                         customerName: customerName,
                         customerPhone: customerPhone,
-                        restaurantId: cartProvider.items.first.restaurantId,
-                        restaurantName: cartProvider.items.first.restaurantName,
+                        restaurantId: restaurantId,
+                        restaurantName: restaurantName,
                         items: List.from(cartProvider.items),
                         total: cartProvider.totalAmount,
                       );
+                      
+                      // Debug: Check if order was saved
+                      print('📦 Total orders in provider: ${orderProvider.orders.length}');
                       
                       // Clear the cart
                       cartProvider.clearCart();
                       
                       // Show success dialog
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (ctx) => AlertDialog(
-                          title: const Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text('Order Placed!'),
-                            ],
-                          ),
-                          content: const Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Your order has been sent to the restaurant.'),
-                              SizedBox(height: 8),
-                              Text('📱 The restaurant will confirm your order shortly.'),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                Navigator.pop(context); // Go back to home
-                              },
-                              child: const Text('OK'),
+                      if (context.mounted) {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (ctx) => AlertDialog(
+                            title: const Row(
+                              children: [
+                                Icon(Icons.check_circle, color: Colors.green),
+                                SizedBox(width: 8),
+                                Text('Order Placed!'),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
+                            content: const Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('✅ Your order has been sent to the restaurant.'),
+                                SizedBox(height: 8),
+                                Text('📱 The restaurant will confirm your order shortly.'),
+                                SizedBox(height: 8),
+                                Text('💡 Log in as restaurant to accept the order.'),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  Navigator.pop(context); // Go back to home
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
