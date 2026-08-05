@@ -16,6 +16,10 @@ class CartScreen extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.orange,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
           title: const Text('Your Cart', style: TextStyle(color: Colors.white)),
         ),
         body: const Center(
@@ -42,6 +46,10 @@ class CartScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.orange,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context), // 👈 Back button
+        ),
         title: const Text('Your Cart', style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
@@ -73,7 +81,6 @@ class CartScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Restaurant Name
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -92,7 +99,6 @@ class CartScreen extends StatelessWidget {
             ),
           ),
           
-          // Cart Items
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -151,7 +157,6 @@ class CartScreen extends StatelessWidget {
             ),
           ),
           
-          // Total & Checkout
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -181,17 +186,8 @@ class CartScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () async {
-                      // Get the order provider
                       final orderProvider = Provider.of<OrderProvider>(context, listen: false);
                       
-                      // Debug: Print order details
-                      print('📦 === PLACING ORDER ===');
-                      print('👤 Customer: $customerName ($customerPhone)');
-                      print('🏪 Restaurant: $restaurantName ($restaurantId)');
-                      print('📦 Items: ${cartProvider.items.length}');
-                      print('💰 Total: ${cartProvider.totalAmount}');
-                      
-                      // Place the order
                       orderProvider.placeOrder(
                         customerName: customerName,
                         customerPhone: customerPhone,
@@ -201,13 +197,8 @@ class CartScreen extends StatelessWidget {
                         total: cartProvider.totalAmount,
                       );
                       
-                      // Debug: Check if order was saved
-                      print('📦 Total orders in provider: ${orderProvider.orders.length}');
-                      
-                      // Clear the cart
                       cartProvider.clearCart();
                       
-                      // Show success dialog
                       if (context.mounted) {
                         showDialog(
                           context: context,
@@ -227,8 +218,6 @@ class CartScreen extends StatelessWidget {
                                 Text('✅ Your order has been sent to the restaurant.'),
                                 SizedBox(height: 8),
                                 Text('📱 The restaurant will confirm your order shortly.'),
-                                SizedBox(height: 8),
-                                Text('💡 Log in as restaurant to accept the order.'),
                               ],
                             ),
                             actions: [

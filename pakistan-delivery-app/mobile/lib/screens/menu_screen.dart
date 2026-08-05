@@ -17,7 +17,6 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  // Mock menu items
   final List<Map<String, dynamic>> _menuItems = [
     {'id': '1', 'name': 'Chicken Biryani', 'price': 450, 'description': 'Fragrant rice with spiced chicken', 'category': 'Main'},
     {'id': '2', 'name': 'Mutton Karahi', 'price': 850, 'description': 'Traditional karahi with tender mutton', 'category': 'Main'},
@@ -34,7 +33,6 @@ class _MenuScreenState extends State<MenuScreen> {
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
     
-    // Filter items by category
     List<Map<String, dynamic>> filteredItems = _menuItems;
     if (_selectedCategory != 'All') {
       filteredItems = _menuItems.where((item) => item['category'] == _selectedCategory).toList();
@@ -43,33 +41,44 @@ class _MenuScreenState extends State<MenuScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.orange,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context), // 👈 Back button
+        ),
         title: Text(widget.restaurantName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.shopping_cart, color: Colors.white),
-                onPressed: () {
-                  // Navigate to cart
-                },
-              ),
-              if (cartProvider.itemCount > 0)
-                Positioned(
-                  right: 4,
-                  top: 4,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '${cartProvider.itemCount}',
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                    ),
+          Consumer<CartProvider>(
+            builder: (context, cart, child) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CartScreen()),
+                      );
+                    },
                   ),
-                ),
-            ],
+                  if (cart.itemCount > 0)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${cart.itemCount}',
+                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -144,7 +153,6 @@ class _MenuScreenState extends State<MenuScreen> {
       ),
       child: Row(
         children: [
-          // Icon/Image placeholder
           Container(
             width: 60,
             height: 60,
@@ -183,13 +191,11 @@ class _MenuScreenState extends State<MenuScreen> {
           ElevatedButton(
             onPressed: () {
               if (isInCart) {
-                // Remove from cart
                 cartProvider.removeItem(item['id']);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('${item['name']} removed from cart')),
                 );
               } else {
-                // Add to cart
                 cartProvider.addItem(
                   CartItem(
                     id: item['id'],
